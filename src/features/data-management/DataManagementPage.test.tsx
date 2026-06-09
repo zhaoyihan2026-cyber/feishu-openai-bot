@@ -73,6 +73,7 @@ describe("DataManagementPage", () => {
     const file = new File([validCsv], "append.csv", { type: "text/csv" });
 
     await user.upload(await screen.findByLabelText("导入文件"), file);
+    await screen.findByText("字段识别");
     await user.click(screen.getByRole("button", { name: "追加导入" }));
 
     await waitFor(async () => {

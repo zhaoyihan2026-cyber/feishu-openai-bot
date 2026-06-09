@@ -1510,6 +1510,136 @@ button:hover {
   padding: 8px;
 }
 
+.data-management-page {
+  display: grid;
+  gap: 20px;
+}
+
+.data-management-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.data-management-header span,
+.data-source-status span {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.data-management-header h1 {
+  margin: 4px 0 0;
+  font-size: 1.7rem;
+}
+
+.data-source-status,
+.import-panel,
+.version-list {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  padding: 18px;
+}
+
+.data-source-status {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 3fr auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.data-source-status strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.1rem;
+}
+
+.data-source-status dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.data-source-status dt {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+}
+
+.data-source-status dd {
+  margin: 3px 0 0;
+  font-weight: 700;
+}
+
+.import-dropzone {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 8px;
+  background: var(--color-surface-subtle);
+}
+
+.import-dropzone span {
+  font-weight: 700;
+}
+
+.import-dropzone input {
+  max-width: 420px;
+}
+
+.import-preview {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.import-preview h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.import-preview ul,
+.issue-list ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.import-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.import-summary-grid > div {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-subtle);
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
+.issue-list {
+  border-left: 3px solid var(--color-warning);
+  padding-left: 12px;
+}
+
+.import-actions,
+.version-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.version-list {
+  display: grid;
+  gap: 16px;
+}
+
 @media (max-width: 1300px) {
   .kpi-strip.dashboard-kpis {
     grid-template-columns: repeat(4, minmax(0, 1fr));

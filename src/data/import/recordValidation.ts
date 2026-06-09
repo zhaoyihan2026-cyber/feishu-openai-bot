@@ -200,9 +200,11 @@ export function validateImportRows(
       "campaign",
       "Unspecified Campaign",
     );
+    const date = parsedDate.ok ? parsedDate.value : "";
+
     records.push({
-      id: createRecordId(parsedDate.value, platform!, campaign, rowNumber),
-      date: parsedDate.value,
+      id: createRecordId(date, platform!, campaign, rowNumber),
+      date,
       updatedAt: fallbackString(
         row,
         mappedFields,
