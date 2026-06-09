@@ -25,6 +25,7 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "总览" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "投放分析" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "素材分析" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "数据管理" })).toBeInTheDocument();
     expect(
       await screen.findByRole("heading", { name: "管理总览" }),
     ).toBeInTheDocument();
@@ -32,6 +33,17 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "预算节奏" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "异常提醒" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "平台表现" })).toBeInTheDocument();
+  });
+
+  it("opens the data management route", async () => {
+    window.history.pushState({}, "", "/data");
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole("heading", { name: "数据管理" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("当前使用模拟数据")).toBeInTheDocument();
   });
 
   it("navigates between performance and creative analysis", async () => {

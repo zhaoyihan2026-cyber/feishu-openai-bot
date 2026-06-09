@@ -1,4 +1,4 @@
-import type { DataProvider } from "../DataProvider";
+import type { DataProvider, DataSourceMetadata } from "../DataProvider";
 import type { AcquisitionRecord } from "../../domain/types";
 import type {
   ImportedDatasetRepository,
@@ -18,6 +18,16 @@ export class ImportedDataProvider implements DataProvider {
   async getRecords(): Promise<AcquisitionRecord[]> {
     const version = await this.getCurrentVersion();
     return structuredClone(version.records);
+  }
+
+  async getMetadata(): Promise<DataSourceMetadata> {
+    const version = await this.getCurrentVersion();
+    return {
+      type: "imported",
+      label: version.name,
+      recordCount: version.records.length,
+      timestamp: version.createdAt,
+    };
   }
 
   async getCurrentVersion(): Promise<ImportedDatasetVersion> {

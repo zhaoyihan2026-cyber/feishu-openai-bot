@@ -1,4 +1,4 @@
-import { BarChart3, Image, LayoutDashboard } from "lucide-react";
+import { BarChart3, Database, Image, LayoutDashboard } from "lucide-react";
 import {
   useEffect,
   useMemo,
@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { NavLink, Outlet, useOutletContext } from "react-router-dom";
-import type { DataProvider } from "../../data/DataProvider";
+import type { DataProvider, DataSourceMetadata } from "../../data/DataProvider";
 import { MockDataProvider } from "../../data/mock/MockDataProvider";
 import { MOCK_DATA_AS_OF } from "../../data/mock/records";
 import { filterRecords } from "../../domain/filters";
@@ -23,6 +23,8 @@ export interface AppDataContext {
   loading: boolean;
   error: Error | null;
   mockAsOfTimestamp: string;
+  dataSource: DataSourceMetadata;
+  refreshData: () => void;
 }
 
 interface NavigationItem {
@@ -40,6 +42,7 @@ const navigationItems: NavigationItem[] = [
   { to: "/", label: "总览", icon: LayoutDashboard, end: true },
   { to: "/performance", label: "投放分析", icon: BarChart3 },
   { to: "/creatives", label: "素材分析", icon: Image },
+  { to: "/data", label: "数据管理", icon: Database },
 ];
 
 function formatTimestamp(timestamp: string): string {
@@ -59,9 +62,16 @@ export function AppShell({
 }: AppShellProps = {}) {
   const { filters } = useFilters();
   const [records, setRecords] = useState<AcquisitionRecord[]>([]);
+  const [dataSource, setDataSource] = useState<DataSourceMetadata>({
+    type: "mock",
+    label: "MockDataProvider",
+    recordCount: 0,
+    timestamp: MOCK_DATA_AS_OF,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
+  const refreshData = () => setLoadAttempt((value) => value + 1);
 
   useEffect(() => {
     let isCurrent = true;
@@ -69,11 +79,23 @@ export function AppShell({
     setLoading(true);
     setError(null);
 
-    dataProvider
-      .getRecords()
-      .then((nextRecords) => {
+    Promise.all([
+      dataProvider.getRecords(),
+      dataProvider.getMetadata?.() ??
+        Promise.resolve<DataSourceMetadata>({
+          type: "mock",
+          label: "MockDataProvider",
+          recordCount: 0,
+          timestamp: MOCK_DATA_AS_OF,
+        }),
+    ])
+      .then(([nextRecords, nextDataSource]) => {
         if (isCurrent) {
           setRecords(nextRecords);
+          setDataSource({
+            ...nextDataSource,
+            recordCount: nextDataSource.recordCount || nextRecords.length,
+          });
         }
       })
       .catch((reason: unknown) => {
@@ -105,8 +127,10 @@ export function AppShell({
       loading,
       error,
       mockAsOfTimestamp: MOCK_DATA_AS_OF,
+      dataSource,
+      refreshData,
     }),
-    [error, filteredRecords, loading, records],
+    [dataSource, error, filteredRecords, loading, records],
   );
   const shouldRenderOutlet = !loading && !error;
 
@@ -126,7 +150,7 @@ export function AppShell({
         title="投放数据加载失败"
         message={error.message}
         action={
-          <button type="button" onClick={() => setLoadAttempt((value) => value + 1)}>
+          <button type="button" onClick={refreshData}>
             重试
           </button>
         }
@@ -160,8 +184,8 @@ export function AppShell({
         <header className="app-header">
           <div className="app-header-meta">
             <span>投放数据工作台</span>
-            <time dateTime={MOCK_DATA_AS_OF}>
-              数据截至 {formatTimestamp(MOCK_DATA_AS_OF)}
+            <time dateTime={dataSource.timestamp}>
+              数据截至 {formatTimestamp(dataSource.timestamp)}
             </time>
           </div>
           <div className="app-filters">

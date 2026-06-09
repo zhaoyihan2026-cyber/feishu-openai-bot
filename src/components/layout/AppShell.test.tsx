@@ -32,6 +32,7 @@ function createProvider(
 
 function AppDataConsumer() {
   const {
+    dataSource,
     error,
     filteredRecords,
     loading,
@@ -42,6 +43,8 @@ function AppDataConsumer() {
   return (
     <section aria-label="outlet content">
       <output aria-label="mock data as of">{mockAsOfTimestamp}</output>
+      <output aria-label="data source type">{dataSource.type}</output>
+      <output aria-label="data source label">{dataSource.label}</output>
       <output aria-label="record ids">
         {records.map(({ id }) => id).join(",")}
       </output>
@@ -136,6 +139,10 @@ describe("AppShell", () => {
     );
     expect(screen.getByLabelText("mock data as of")).toHaveTextContent(
       MOCK_DATA_AS_OF,
+    );
+    expect(screen.getByLabelText("data source type")).toHaveTextContent("mock");
+    expect(screen.getByLabelText("data source label")).toHaveTextContent(
+      "MockDataProvider",
     );
 
     await user.selectOptions(
