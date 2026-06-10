@@ -5,6 +5,7 @@ import { mockRecords } from "../../data/mock/records";
 import { buildDatasetSummary } from "../../data/import/datasetSummary";
 import { InMemoryImportedDatasetRepository } from "../../data/import/InMemoryImportedDatasetRepository";
 import type { ImportedDatasetVersion } from "../../data/import/types";
+import { FilterProvider, useFilters } from "../../state/FilterContext";
 import { DataManagementPage } from "./DataManagementPage";
 
 const validCsv = [
@@ -26,7 +27,34 @@ function makeVersion(id: string): ImportedDatasetVersion {
 }
 
 function renderPage(repository = new InMemoryImportedDatasetRepository()) {
-  render(<DataManagementPage repository={repository} />);
+  render(
+    <FilterProvider>
+      <DataManagementPage repository={repository} />
+    </FilterProvider>,
+  );
+  return repository;
+}
+
+function FilterProbe() {
+  const { filters } = useFilters();
+
+  return (
+    <>
+      <output aria-label="date from">{filters.dateFrom}</output>
+      <output aria-label="date to">{filters.dateTo}</output>
+    </>
+  );
+}
+
+function renderPageWithFilters(
+  repository = new InMemoryImportedDatasetRepository(),
+) {
+  render(
+    <FilterProvider>
+      <FilterProbe />
+      <DataManagementPage repository={repository} />
+    </FilterProvider>,
+  );
   return repository;
 }
 
@@ -50,7 +78,9 @@ describe("DataManagementPage", () => {
     expect(screen.getByText("Meta Ads")).toBeInTheDocument();
     expect(screen.getByText("有效行 1")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "覆盖导入" }));
+    await user.click(
+      screen.getByRole("button", { name: "保存并使用导入数据" }),
+    );
 
     await waitFor(async () => {
       const state = await repository.loadState();
@@ -64,6 +94,30 @@ describe("DataManagementPage", () => {
     expect(await screen.findByText("当前使用导入数据")).toBeInTheDocument();
   });
 
+  it("sets global filters to the imported data range after saving", async () => {
+    const user = userEvent.setup();
+    renderPageWithFilters();
+    const aprilCsv = [
+      "Date,Platform,Spend,Impressions,Clicks,Installs",
+      "2026-04-01,facebook,120,1000,50,20",
+      "2026-04-30,facebook,150,1100,55,22",
+    ].join("\n");
+    const file = new File([aprilCsv], "april-import.csv", {
+      type: "text/csv",
+    });
+
+    await user.upload(await screen.findByLabelText("导入文件"), file);
+    await screen.findByText("有效行 2");
+    await user.click(
+      screen.getByRole("button", { name: "保存并使用导入数据" }),
+    );
+
+    expect(await screen.findByLabelText("date from")).toHaveTextContent(
+      "2026-04-01",
+    );
+    expect(screen.getByLabelText("date to")).toHaveTextContent("2026-04-30");
+  });
+
   it("appends to the current version by creating a new version", async () => {
     const user = userEvent.setup();
     const repository = new InMemoryImportedDatasetRepository();
@@ -74,7 +128,7 @@ describe("DataManagementPage", () => {
 
     await user.upload(await screen.findByLabelText("导入文件"), file);
     await screen.findByText("字段识别");
-    await user.click(screen.getByRole("button", { name: "追加导入" }));
+    await user.click(screen.getByRole("button", { name: "追加到当前数据" }));
 
     await waitFor(async () => {
       const state = await repository.loadState();

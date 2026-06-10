@@ -8,7 +8,7 @@ import {
 } from "./FilterContext";
 
 function FilterConsumer() {
-  const { filters, resetFilters, setFilter } = useFilters();
+  const { filters, resetFilters, setFilter, setFilters } = useFilters();
 
   return (
     <>
@@ -16,11 +16,24 @@ function FilterConsumer() {
         {filters.platforms.join(", ") || "All platforms"}
       </output>
       <output aria-label="date from">{filters.dateFrom}</output>
+      <output aria-label="date to">{filters.dateTo}</output>
       <button
         type="button"
         onClick={() => setFilter("platforms", ["Meta Ads"])}
       >
         Select Meta
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          setFilters({
+            dateFrom: "2026-04-01",
+            dateTo: "2026-04-30",
+            platforms: [],
+          })
+        }
+      >
+        Show April import
       </button>
       <button type="button" onClick={resetFilters}>
         Reset
@@ -72,6 +85,15 @@ describe("FilterProvider", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Select Meta" }));
     expect(screen.getByLabelText("platforms")).toHaveTextContent("Meta Ads");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show April import" }),
+    );
+    expect(screen.getByLabelText("date from")).toHaveTextContent("2026-04-01");
+    expect(screen.getByLabelText("date to")).toHaveTextContent("2026-04-30");
+    expect(screen.getByLabelText("platforms")).toHaveTextContent(
+      "All platforms",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
     expect(screen.getByLabelText("platforms")).toHaveTextContent(

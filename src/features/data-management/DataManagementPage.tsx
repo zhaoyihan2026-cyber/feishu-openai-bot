@@ -6,6 +6,7 @@ import { mapHeaders } from "../../data/import/fieldMapping";
 import { parseImportFile } from "../../data/import/fileParsing";
 import { validateImportRows } from "../../data/import/recordValidation";
 import type {
+  DatasetSummary,
   HeaderMappingResult,
   ImportedDatasetRepository,
   ImportedDatasetState,
@@ -15,6 +16,7 @@ import type {
   RawImportRow,
 } from "../../data/import/types";
 import type { AcquisitionRecord } from "../../domain/types";
+import { useFilters } from "../../state/FilterContext";
 
 interface DataManagementPageProps {
   repository: ImportedDatasetRepository;
@@ -134,6 +136,7 @@ export function DataManagementPage({
   repository,
   onDataChanged,
 }: DataManagementPageProps) {
+  const { setFilters } = useFilters();
   const [state, setState] = useState<ImportedDatasetState>({
     currentVersionId: null,
     versions: [],
@@ -233,24 +236,42 @@ export function DataManagementPage({
     const baseRecords =
       mode === "append" && activeVersion ? activeVersion.records : [];
     const records = [...baseRecords, ...preview.records];
+    const summary = buildDatasetSummary(
+      records,
+      preview.issues,
+      preview.rows.length,
+    );
     const version: ImportedDatasetVersion = {
       id: createVersionId(preview.fileName, preview.importedAt),
       name: createVersionName(preview.fileName, preview.importedAt),
       createdAt: preview.importedAt,
       mode,
       records,
-      summary: buildDatasetSummary(
-        records,
-        preview.issues,
-        preview.rows.length,
-      ),
+      summary,
       issues: preview.issues,
     };
 
     await repository.saveVersion(version);
     await refresh();
     setPreview(null);
+    applyImportedDataFilters(summary);
     onDataChanged?.();
+  }
+
+  function applyImportedDataFilters(summary: DatasetSummary) {
+    if (!summary.dateRange) {
+      return;
+    }
+
+    setFilters({
+      dateFrom: summary.dateRange.start,
+      dateTo: summary.dateRange.end,
+      apps: [],
+      platforms: [],
+      accounts: [],
+      countries: [],
+      operatingSystems: [],
+    });
   }
 
   async function clearImportedData() {
@@ -368,6 +389,31 @@ export function DataManagementPage({
               <div>警告 {preview.quality.warnings}</div>
             </div>
 
+            <div className="import-save-panel">
+              <div>
+                <strong>预览已生成，保存后才会用于总览和投放分析。</strong>
+                <span>
+                  保存成功后，顶部日期会自动切换到导入数据范围。
+                </span>
+              </div>
+              <div className="import-actions">
+                <button
+                  disabled={preview.records.length === 0}
+                  onClick={() => saveImport("replace")}
+                  type="button"
+                >
+                  保存并使用导入数据
+                </button>
+                <button
+                  disabled={preview.records.length === 0}
+                  onClick={() => saveImport("append")}
+                  type="button"
+                >
+                  追加到当前数据
+                </button>
+              </div>
+            </div>
+
             {preview.issues.length > 0 ? (
               <section className="issue-list">
                 <h3>错误与警告</h3>
@@ -388,23 +434,6 @@ export function DataManagementPage({
               getRowKey={({ id }) => id}
               rows={preview.records.slice(0, 20)}
             />
-
-            <div className="import-actions">
-              <button
-                disabled={preview.records.length === 0}
-                onClick={() => saveImport("replace")}
-                type="button"
-              >
-                覆盖导入
-              </button>
-              <button
-                disabled={preview.records.length === 0}
-                onClick={() => saveImport("append")}
-                type="button"
-              >
-                追加导入
-              </button>
-            </div>
           </div>
         ) : null}
       </section>

@@ -20,6 +20,7 @@ interface FilterContextValue {
     key: Key,
     value: FilterState[Key],
   ) => void;
+  setFilters: (filters: Partial<FilterState>) => void;
   resetFilters: () => void;
 }
 
@@ -42,13 +43,20 @@ export function FilterProvider({ children }: FilterProviderProps) {
     [],
   );
 
+  const setFilterValues = useCallback((values: Partial<FilterState>) => {
+    setFilters((current) => ({
+      ...current,
+      ...values,
+    }));
+  }, []);
+
   const resetFilters = useCallback(() => {
     setFilters(createDefaultFilters());
   }, []);
 
   const value = useMemo(
-    () => ({ filters, setFilter, resetFilters }),
-    [filters, resetFilters, setFilter],
+    () => ({ filters, setFilter, setFilters: setFilterValues, resetFilters }),
+    [filters, resetFilters, setFilter, setFilterValues],
   );
 
   return (
