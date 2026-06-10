@@ -18,6 +18,7 @@ import { useFilters } from "../../state/FilterContext";
 import {
   advanceDrillPath,
   applyDrillPath,
+  buildDailyDetailRows,
   buildDailySeries,
   deriveBaselinePath,
   dimensionLabels,
@@ -27,6 +28,7 @@ import {
   searchDimensionRows,
   truncateDrillPathToBaseline,
   type ContributionMetric,
+  type DailyDetailRow,
   type DimensionRow,
   type DrillDimension,
   type DrillPathItem,
@@ -59,6 +61,8 @@ function ModuleHeading({
   );
 }
 
+type DetailMode = "summary" | "daily";
+
 export function PerformanceAnalysisPage() {
   const { filteredRecords } = useAppData();
   const { filters, resetFilters } = useFilters();
@@ -84,6 +88,7 @@ export function PerformanceAnalysisPage() {
     useState<DrillDimension>(() => nextDimension(baselinePath));
   const [contributionMetric, setContributionMetric] =
     useState<ContributionMetric>("spend");
+  const [detailMode, setDetailMode] = useState<DetailMode>("summary");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -113,6 +118,37 @@ export function PerformanceAnalysisPage() {
     () => searchDimensionRows(rows, searchQuery),
     [rows, searchQuery],
   );
+  const dailyDetailRows = useMemo(
+    () =>
+      buildDailyDetailRows(
+        currentRecords,
+        currentDimension,
+        contributionMetric,
+      ),
+    [contributionMetric, currentDimension, currentRecords],
+  );
+  const visibleDailyDetailRows = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+    if (!normalizedQuery) {
+      return dailyDetailRows;
+    }
+
+    return dailyDetailRows.filter((row) =>
+      [
+        row.date,
+        row.value,
+        row.platform,
+        row.account,
+        row.country,
+        row.os,
+        row.campaign,
+        row.adGroup,
+        row.creative,
+      ].some((value) =>
+        value.toLocaleLowerCase().includes(normalizedQuery),
+      ),
+    );
+  }, [dailyDetailRows, searchQuery]);
   const dailySeries = useMemo(
     () => buildDailySeries(currentRecords),
     [currentRecords],
@@ -153,6 +189,7 @@ export function PerformanceAnalysisPage() {
     setDrillPath(baselinePath);
     setCurrentDimension(nextDimension(baselinePath));
     setSearchQuery("");
+    setDetailMode("summary");
   }, [baselinePath]);
 
   const drillInto = useCallback(
@@ -168,6 +205,7 @@ export function PerformanceAnalysisPage() {
       setDrillPath(nextPath);
       setCurrentDimension(nextDimension(nextPath, currentDimension));
       setSearchQuery("");
+      setDetailMode("summary");
     },
     [currentDimension, drillPath],
   );
@@ -182,6 +220,7 @@ export function PerformanceAnalysisPage() {
       setDrillPath(nextPath);
       setCurrentDimension(nextDimension(nextPath, targetDimension));
       setSearchQuery("");
+      setDetailMode("summary");
     },
     [baselinePath, drillPath],
   );
@@ -360,6 +399,187 @@ export function PerformanceAnalysisPage() {
     [currentDimension, drillInto],
   );
 
+  const dailyDetailColumns = useMemo<DataTableColumn<DailyDetailRow>[]>(
+    () => [
+      {
+        id: "date",
+        header: "日期 Date",
+        cell: ({ date }) => date,
+        sortable: true,
+        sortValue: ({ date }) => date,
+      },
+      {
+        id: "value",
+        header: dimensionLabels[currentDimension],
+        cell: ({ value }) => (
+          <span className="performance-terminal-value">{value}</span>
+        ),
+        sortable: true,
+        sortValue: ({ value }) => value,
+      },
+      {
+        id: "campaign",
+        header: "Campaign",
+        cell: ({ campaign }) => (
+          <span className="performance-terminal-value">{campaign}</span>
+        ),
+        sortable: true,
+        sortValue: ({ campaign }) => campaign,
+      },
+      {
+        id: "ad-group",
+        header: "Ad Group",
+        cell: ({ adGroup }) => (
+          <span className="performance-terminal-value">{adGroup}</span>
+        ),
+        sortable: true,
+        sortValue: ({ adGroup }) => adGroup,
+      },
+      {
+        id: "creative",
+        header: "Creative",
+        cell: ({ creative }) => (
+          <span className="performance-terminal-value">{creative}</span>
+        ),
+        sortable: true,
+        sortValue: ({ creative }) => creative,
+      },
+      {
+        id: "spend",
+        header: "花费 Spend",
+        cell: ({ spendUsd }) => performanceFormatters.currency(spendUsd),
+        sortable: true,
+        sortValue: ({ spendUsd }) => spendUsd,
+        align: "right",
+      },
+      {
+        id: "impressions",
+        header: "展示 Impressions",
+        cell: ({ impressions }) => performanceFormatters.integer(impressions),
+        sortable: true,
+        sortValue: ({ impressions }) => impressions,
+        align: "right",
+      },
+      {
+        id: "clicks",
+        header: "点击 Clicks",
+        cell: ({ clicks }) => performanceFormatters.integer(clicks),
+        sortable: true,
+        sortValue: ({ clicks }) => clicks,
+        align: "right",
+      },
+      {
+        id: "installs",
+        header: "安装 Installs",
+        cell: ({ installs }) => performanceFormatters.integer(installs),
+        sortable: true,
+        sortValue: ({ installs }) => installs,
+        align: "right",
+      },
+      {
+        id: "activations",
+        header: "注册 Registrations",
+        cell: ({ activations }) => performanceFormatters.integer(activations),
+        sortable: true,
+        sortValue: ({ activations }) => activations,
+        align: "right",
+      },
+      {
+        id: "payers",
+        header: "付费用户",
+        cell: ({ payers }) => performanceFormatters.integer(payers),
+        sortable: true,
+        sortValue: ({ payers }) => payers,
+        align: "right",
+      },
+      {
+        id: "paid-value",
+        header: "付费价值 Paid Value",
+        cell: ({ revenueD7Usd }) =>
+          performanceFormatters.currency(revenueD7Usd),
+        sortable: true,
+        sortValue: ({ revenueD7Usd }) => revenueD7Usd,
+        align: "right",
+      },
+      {
+        id: "ctr",
+        header: "CTR",
+        cell: ({ ctr }) => performanceFormatters.percent(ctr),
+        sortable: true,
+        sortValue: ({ ctr }) => ctr,
+        align: "right",
+      },
+      {
+        id: "cvr",
+        header: "CVR",
+        cell: ({ cvr }) => performanceFormatters.percent(cvr),
+        sortable: true,
+        sortValue: ({ cvr }) => cvr,
+        align: "right",
+      },
+      {
+        id: "cpi",
+        header: "CPI",
+        cell: ({ cpi }) => performanceFormatters.currency(cpi),
+        sortable: true,
+        sortValue: ({ cpi }) => cpi,
+        align: "right",
+      },
+      {
+        id: "cpr",
+        header: "CPR",
+        cell: ({ cpr }) => performanceFormatters.currency(cpr),
+        sortable: true,
+        sortValue: ({ cpr }) => cpr,
+        align: "right",
+      },
+      {
+        id: "cpp",
+        header: "CPP",
+        cell: ({ cpp }) => performanceFormatters.currency(cpp),
+        sortable: true,
+        sortValue: ({ cpp }) => cpp,
+        align: "right",
+      },
+      {
+        id: "d0-roas",
+        header: "D0 ROAS",
+        cell: ({ d0Roas }) => performanceFormatters.percent(d0Roas),
+        sortable: true,
+        sortValue: ({ d0Roas }) => d0Roas,
+        align: "right",
+      },
+      {
+        id: "d1-retention",
+        header: "D1 留存",
+        cell: ({ d1RetentionRate }) =>
+          performanceFormatters.percent(d1RetentionRate),
+        sortable: true,
+        sortValue: ({ d1RetentionRate }) => d1RetentionRate,
+        align: "right",
+      },
+      {
+        id: "d7-retention",
+        header: "D7 留存",
+        cell: ({ d7RetentionRate }) =>
+          performanceFormatters.percent(d7RetentionRate),
+        sortable: true,
+        sortValue: ({ d7RetentionRate }) => d7RetentionRate,
+        align: "right",
+      },
+      {
+        id: "contribution",
+        header: "贡献占比",
+        cell: ({ contribution }) =>
+          performanceFormatters.percent(contribution),
+        sortable: true,
+        sortValue: ({ contribution }) => contribution,
+        align: "right",
+      },
+    ],
+    [currentDimension],
+  );
+
   return (
     <section className="page performance-page">
       <header className="page-heading performance-heading">
@@ -533,7 +753,33 @@ export function PerformanceAnalysisPage() {
             <header className="performance-table-heading">
               <div>
                 <h2>下钻明细</h2>
-                <span>{visibleRows.length} 项</span>
+                <span>
+                  {detailMode === "summary"
+                    ? `${visibleRows.length} 项`
+                    : `${visibleDailyDetailRows.length} 条每日记录`}
+                </span>
+              </div>
+              <div
+                className="performance-detail-toggle"
+                role="group"
+                aria-label="选择下钻明细视图"
+              >
+                <button
+                  aria-pressed={detailMode === "summary"}
+                  className={detailMode === "summary" ? "is-active" : undefined}
+                  type="button"
+                  onClick={() => setDetailMode("summary")}
+                >
+                  汇总视图
+                </button>
+                <button
+                  aria-pressed={detailMode === "daily"}
+                  className={detailMode === "daily" ? "is-active" : undefined}
+                  type="button"
+                  onClick={() => setDetailMode("daily")}
+                >
+                  每日明细
+                </button>
               </div>
               <label className="performance-search">
                 <span className="visually-hidden">搜索当前维度</span>
@@ -542,18 +788,31 @@ export function PerformanceAnalysisPage() {
                   aria-label="搜索当前维度"
                   type="search"
                   value={searchQuery}
-                  placeholder={`搜索 ${dimensionLabels[currentDimension]}`}
+                  placeholder={
+                    detailMode === "summary"
+                      ? `搜索 ${dimensionLabels[currentDimension]}`
+                      : "搜索日期 / Campaign / Creative"
+                  }
                   onChange={(event) => setSearchQuery(event.target.value)}
                 />
               </label>
             </header>
-            {visibleRows.length > 0 ? (
+            {detailMode === "summary" && visibleRows.length > 0 ? (
               <DataTable
                 ariaLabel="投放分析明细表"
                 className="performance-table"
                 columns={columns}
                 rows={visibleRows}
                 getRowKey={({ value }) => value}
+              />
+            ) : detailMode === "daily" &&
+              visibleDailyDetailRows.length > 0 ? (
+              <DataTable
+                ariaLabel="投放分析每日明细表"
+                className="performance-table performance-table--daily-detail"
+                columns={dailyDetailColumns}
+                rows={visibleDailyDetailRows}
+                getRowKey={({ id }) => id}
               />
             ) : (
               <ModuleState

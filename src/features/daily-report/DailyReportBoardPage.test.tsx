@@ -132,4 +132,19 @@ describe("DailyReportBoardPage", () => {
     expect(within(creative).getByText("Meta Campaign / Video A"))
       .toBeInTheDocument();
   });
+
+  it("orders the board from country overview to campaign and creative detail", () => {
+    renderPage();
+
+    const modules = screen.getAllByRole("region", {
+      name: /Meta Ads - 新用户行为/,
+    });
+
+    expect(modules.map((module) => module.getAttribute("aria-label")))
+      .toEqual([
+        "Meta Ads - 新用户行为 - 分国家",
+        "Meta Ads - 新用户行为 - 分 Campaign",
+        "Meta Ads - 新用户行为 - 分 Campaign 分 Creative",
+      ]);
+  });
 });

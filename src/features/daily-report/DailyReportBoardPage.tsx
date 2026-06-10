@@ -153,10 +153,14 @@ function PivotMetricRows({
               {row.label}
             </th>
           ) : null}
-          <th scope="row">{metric.label}</th>
-          <td>{formatMetric(metric.total, metric.format)}</td>
+          <th className="daily-report-metric-cell" scope="row">
+            {metric.label}
+          </th>
+          <td className="daily-report-total-cell">
+            {formatMetric(metric.total, metric.format)}
+          </td>
           {dates.map((date) => (
-            <td key={date}>
+            <td className="daily-report-date-cell" key={date}>
               {formatMetric(metric.valuesByDate[date] ?? 0, metric.format)}
             </td>
           ))}
@@ -180,11 +184,17 @@ function PivotTable({
       <table className="daily-report-table daily-report-pivot-table">
         <thead>
           <tr>
-            <th scope="col">{firstColumn}</th>
-            <th scope="col">指标</th>
-            <th scope="col">阶段汇总</th>
+            <th className="daily-report-pivot-label" scope="col">
+              {firstColumn}
+            </th>
+            <th className="daily-report-metric-cell" scope="col">
+              指标
+            </th>
+            <th className="daily-report-total-cell" scope="col">
+              阶段汇总
+            </th>
             {dates.map((date) => (
-              <th scope="col" key={date}>
+              <th className="daily-report-date-cell" scope="col" key={date}>
                 {date}
               </th>
             ))}

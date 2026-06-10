@@ -192,7 +192,7 @@ button:hover {
 .daily-report-table td {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  padding: 5px 10px;
+  padding: 5px 9px;
   text-align: right;
   vertical-align: middle;
 }
@@ -212,26 +212,41 @@ button:hover {
 }
 
 .daily-report-country-table th:first-child,
-.daily-report-pivot-table th:first-child {
+.daily-report-pivot-label,
+.daily-report-group-cell {
   position: sticky;
   left: 0;
   z-index: 3;
-  min-width: 160px;
+  width: 176px;
+  min-width: 176px;
+  max-width: 176px;
   background: #ffffff;
-  text-align: center;
+  text-align: left;
+  white-space: normal;
 }
 
-.daily-report-pivot-table th:nth-child(2) {
+.daily-report-metric-cell {
   position: sticky;
-  left: 160px;
+  left: 176px;
   z-index: 3;
-  min-width: 104px;
+  width: 82px;
+  min-width: 82px;
+  max-width: 82px;
   background: #ffffff;
   text-align: center;
 }
 
-.daily-report-pivot-table thead th:first-child,
-.daily-report-pivot-table thead th:nth-child(2),
+.daily-report-total-cell {
+  width: 86px;
+  min-width: 86px;
+}
+
+.daily-report-date-cell {
+  min-width: 108px;
+}
+
+.daily-report-pivot-label,
+.daily-report-pivot-table thead .daily-report-metric-cell,
 .daily-report-country-table thead th:first-child {
   z-index: 4;
   background: #fbfbfc;
@@ -240,6 +255,8 @@ button:hover {
 .daily-report-group-cell {
   color: var(--ink);
   font-weight: 600;
+  line-height: 1.35;
+  vertical-align: top;
 }
 
 .daily-report-table tbody tr:hover th,
@@ -1129,7 +1146,8 @@ button:hover {
 }
 
 .performance-segments,
-.performance-contribution-toggle {
+.performance-contribution-toggle,
+.performance-detail-toggle {
   display: inline-flex;
   min-width: 0;
   overflow-x: auto;
@@ -1139,7 +1157,8 @@ button:hover {
 }
 
 .performance-segments button,
-.performance-contribution-toggle button {
+.performance-contribution-toggle button,
+.performance-detail-toggle button {
   min-height: 32px;
   padding: 0 10px;
   border: 0;
@@ -1153,12 +1172,14 @@ button:hover {
 }
 
 .performance-segments button:last-child,
-.performance-contribution-toggle button:last-child {
+.performance-contribution-toggle button:last-child,
+.performance-detail-toggle button:last-child {
   border-right: 0;
 }
 
 .performance-segments button.is-active,
-.performance-contribution-toggle button.is-active {
+.performance-contribution-toggle button.is-active,
+.performance-detail-toggle button.is-active {
   background: var(--mint);
   color: var(--positive);
 }
@@ -1249,6 +1270,11 @@ button:hover {
   gap: 8px;
 }
 
+.performance-detail-toggle {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .performance-table-heading h2 {
   margin: 0;
   font-size: 14px;
@@ -1298,6 +1324,10 @@ button:hover {
 
 .performance-table .data-table {
   min-width: 920px;
+}
+
+.performance-table--daily-detail .data-table {
+  min-width: 1880px;
 }
 
 .performance-table-link {

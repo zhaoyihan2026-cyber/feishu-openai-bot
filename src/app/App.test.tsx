@@ -89,6 +89,37 @@ describe("App", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows date-level ad detail after drilling into performance", async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, "", "/performance");
+
+    render(<App />);
+
+    const table = await screen.findByRole("region", {
+      name: "投放分析明细表",
+    });
+    await user.click(within(table).getByRole("button", { name: "Meta Ads" }));
+    await user.click(screen.getByRole("button", { name: "每日明细" }));
+
+    const detailTable = screen.getByRole("region", {
+      name: "投放分析每日明细表",
+    });
+    expect(within(detailTable).getByRole("button", { name: /日期 Date/ }))
+      .toBeInTheDocument();
+    expect(within(detailTable).getByRole("button", { name: /Campaign/ }))
+      .toBeInTheDocument();
+    expect(
+      within(detailTable).getAllByText(
+        "Meta Ads | Creator Workflow Acquisition",
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(
+      within(detailTable).getAllByText(
+        "Meta Ads | Creator Workflow | Video | US iOS",
+      ).length,
+    ).toBeGreaterThan(0);
+  });
+
   it("starts at account when dashboard navigation sets a platform filter", async () => {
     const user = userEvent.setup();
     window.history.pushState({}, "", "/dashboard");

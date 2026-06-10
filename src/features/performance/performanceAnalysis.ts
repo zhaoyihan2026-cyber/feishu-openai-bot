@@ -25,6 +25,20 @@ export interface DimensionRow extends Metrics {
   contribution: number;
 }
 
+export interface DailyDetailRow extends Metrics {
+  id: string;
+  date: string;
+  value: string;
+  platform: string;
+  account: string;
+  country: string;
+  os: string;
+  campaign: string;
+  adGroup: string;
+  creative: string;
+  contribution: number;
+}
+
 export interface DailyPerformancePoint {
   date: string;
   spendUsd: number;
@@ -199,6 +213,71 @@ export function searchDimensionRows(
   return rows.filter(({ value }) =>
     value.toLocaleLowerCase().includes(normalizedQuery),
   );
+}
+
+function dailyDetailKey(record: AcquisitionRecord): string {
+  return [
+    record.date,
+    record.platform,
+    record.account,
+    record.country,
+    record.os,
+    record.campaign,
+    record.adGroup,
+    record.creative,
+  ].join("|");
+}
+
+export function buildDailyDetailRows(
+  records: readonly AcquisitionRecord[],
+  dimension: DrillDimension,
+  contributionMetric: ContributionMetric,
+): DailyDetailRow[] {
+  const groups = new Map<string, AcquisitionRecord[]>();
+  for (const record of records) {
+    const key = dailyDetailKey(record);
+    const group = groups.get(key);
+    if (group) {
+      group.push(record);
+    } else {
+      groups.set(key, [record]);
+    }
+  }
+
+  const total = aggregateMetrics([...records]);
+  const denominator =
+    contributionMetric === "spend" ? total.spendUsd : total.installs;
+
+  return [...groups.values()]
+    .map((groupRecords) => {
+      const first = groupRecords[0];
+      const metrics = aggregateMetrics(groupRecords);
+      const numerator =
+        contributionMetric === "spend"
+          ? metrics.spendUsd
+          : metrics.installs;
+
+      return {
+        id: dailyDetailKey(first),
+        date: first.date,
+        value: dimensionValue(first, dimension),
+        platform: first.platform,
+        account: first.account,
+        country: first.country,
+        os: first.os,
+        campaign: first.campaign,
+        adGroup: first.adGroup,
+        creative: first.creative,
+        ...metrics,
+        contribution: denominator === 0 ? 0 : numerator / denominator,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.date.localeCompare(left.date) ||
+        right.spendUsd - left.spendUsd ||
+        left.value.localeCompare(right.value, "zh-CN"),
+    );
 }
 
 export function buildDailySeries(

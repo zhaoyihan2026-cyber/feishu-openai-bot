@@ -2,6 +2,7 @@ import type { FilterState } from "../../domain/filters";
 import type { AcquisitionRecord } from "../../domain/types";
 import {
   applyDrillPath,
+  buildDailyDetailRows,
   buildDailySeries,
   deriveBaselinePath,
   drillDimensions,
@@ -181,6 +182,73 @@ describe("performance drill helpers", () => {
         spendUsd: 360,
         installs: 70,
         d7Roas: 220 / 360,
+      },
+    ]);
+  });
+
+  it("builds date-level detail rows for the current drill context", () => {
+    const dailyRecords: AcquisitionRecord[] = [
+      {
+        ...baseRecord,
+        id: "meta-2026-06-02",
+        date: "2026-06-02",
+        campaign: "Launch Campaign",
+        adGroup: "US iOS Prospecting",
+        creative: "Launch Video A",
+        spendUsd: 75,
+        impressions: 1_500,
+        clicks: 150,
+        installs: 15,
+        activations: 9,
+        payers: 3,
+        revenueD7Usd: 30,
+      },
+      {
+        ...baseRecord,
+        id: "meta-2026-06-01",
+        date: "2026-06-01",
+        campaign: "Launch Campaign",
+        adGroup: "US iOS Prospecting",
+        creative: "Launch Video A",
+        spendUsd: 50,
+        impressions: 1_000,
+        clicks: 100,
+        installs: 10,
+        activations: 5,
+        payers: 1,
+        revenueD7Usd: 15,
+      },
+    ];
+
+    const detailRows = buildDailyDetailRows(dailyRecords, "platform", "spend");
+
+    expect(detailRows).toMatchObject([
+      {
+        id: "2026-06-02|Meta Ads|Meta Growth|US|iOS|Launch Campaign|US iOS Prospecting|Launch Video A",
+        date: "2026-06-02",
+        value: "Meta Ads",
+        platform: "Meta Ads",
+        campaign: "Launch Campaign",
+        adGroup: "US iOS Prospecting",
+        creative: "Launch Video A",
+        spendUsd: 75,
+        impressions: 1_500,
+        clicks: 150,
+        installs: 15,
+        activations: 9,
+        payers: 3,
+        cpi: 5,
+        cpr: 75 / 9,
+        cpp: 25,
+        contribution: 75 / 125,
+      },
+      {
+        date: "2026-06-01",
+        value: "Meta Ads",
+        campaign: "Launch Campaign",
+        creative: "Launch Video A",
+        spendUsd: 50,
+        contribution: 50 / 125,
       },
     ]);
   });
