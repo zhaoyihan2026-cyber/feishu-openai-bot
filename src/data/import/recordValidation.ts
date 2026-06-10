@@ -15,6 +15,7 @@ import { parseDateValue, parseNumberValue } from "./valueParsing";
 
 export interface ValidateImportRowsOptions {
   importedAt: string;
+  sourceName?: string;
 }
 
 export interface ValidateImportRowsResult {
@@ -84,6 +85,21 @@ function addIssue(
   issues.push({ severity: "error", ...issue });
 }
 
+function inferDefaultYear({
+  importedAt,
+  sourceName,
+}: ValidateImportRowsOptions): number | undefined {
+  const sourceYear = /(?:^|[^\d])((?:19|20)\d{2})(?:[^\d]|$)/.exec(
+    sourceName ?? "",
+  )?.[1];
+  if (sourceYear) {
+    return Number(sourceYear);
+  }
+
+  const importedYear = new Date(importedAt).getUTCFullYear();
+  return Number.isFinite(importedYear) ? importedYear : undefined;
+}
+
 export function validateImportRows(
   rows: RawImportRow[],
   mappedFields: Partial<Record<ImportField, string>>,
@@ -91,6 +107,7 @@ export function validateImportRows(
 ): ValidateImportRowsResult {
   const records: AcquisitionRecord[] = [];
   const issues: ImportIssue[] = [];
+  const defaultYear = inferDefaultYear(options);
   let errorRows = 0;
 
   rows.forEach((row, index) => {
@@ -109,7 +126,9 @@ export function validateImportRows(
       }
     }
 
-    const parsedDate = parseDateValue(rawValue(row, mappedFields, "date"));
+    const parsedDate = parseDateValue(rawValue(row, mappedFields, "date"), {
+      defaultYear,
+    });
     if (!parsedDate.ok) {
       addIssue(rowIssues, {
         rowNumber,

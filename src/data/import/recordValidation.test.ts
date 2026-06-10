@@ -106,4 +106,59 @@ describe("validateImportRows", () => {
     expect(result.issues.filter(({ severity }) => severity === "warning"))
       .toHaveLength(2);
   });
+
+  it("imports IGS daily agency report rows without campaign columns", () => {
+    const result = validateImportRows(
+      [
+        {
+          日期: "04-01",
+          媒体: "Meta",
+          国家: "US",
+          消耗: "616",
+          展示次数: "7078",
+          点击次数: "93",
+          安装人数: "22",
+          注册人数: "9",
+          付费人数: "5",
+          付费价值: "100",
+        },
+      ],
+      {
+        date: "日期",
+        platform: "媒体",
+        country: "国家",
+        spendUsd: "消耗",
+        impressions: "展示次数",
+        clicks: "点击次数",
+        installs: "安装人数",
+        activations: "注册人数",
+        payers: "付费人数",
+        revenueD7Usd: "付费价值",
+      },
+      {
+        importedAt: "2026-06-10T02:00:00.000Z",
+        sourceName: "IGS-Dara Casino 代投日报_2026-04.csv",
+      },
+    );
+
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0]).toMatchObject({
+      date: "2026-04-01",
+      platform: "Meta Ads",
+      campaign: "Unspecified Campaign",
+      country: "US",
+      spendUsd: 616,
+      impressions: 7078,
+      clicks: 93,
+      installs: 22,
+      activations: 9,
+      payers: 5,
+      revenueD7Usd: 100,
+    });
+    expect(result.quality).toMatchObject({
+      totalRows: 1,
+      validRows: 1,
+      errorRows: 0,
+    });
+  });
 });

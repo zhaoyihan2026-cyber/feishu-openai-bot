@@ -204,6 +204,7 @@ export function DataManagementPage({
       const mapping = mapHeaders(parsed.headers);
       const validation = validateImportRows(parsed.rows, mapping.mappedFields, {
         importedAt,
+        sourceName: file.name,
       });
 
       setPreview({

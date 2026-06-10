@@ -14,9 +14,17 @@ describe("valueParsing", () => {
     expect(parseDateValue(46282)).toEqual({ ok: true, value: "2026-09-17" });
   });
 
+  it("parses month-day dates when a default year is provided", () => {
+    expect(parseDateValue("04-01", { defaultYear: 2026 })).toEqual({
+      ok: true,
+      value: "2026-04-01",
+    });
+  });
+
   it("rejects invalid dates", () => {
     expect(parseDateValue("2026-99-99").ok).toBe(false);
     expect(parseDateValue("").ok).toBe(false);
+    expect(parseDateValue("04-01").ok).toBe(false);
   });
 
   it("parses currency, commas, and empty optional values", () => {

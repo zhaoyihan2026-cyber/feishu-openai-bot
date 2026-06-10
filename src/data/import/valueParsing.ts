@@ -11,6 +11,7 @@ export interface ParseFailure {
 export type ParseResult<Value> = ParseSuccess<Value> | ParseFailure;
 
 const DATE_PATTERN = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/;
+const MONTH_DAY_PATTERN = /^(\d{1,2})[-/](\d{1,2})$/;
 const EXCEL_EPOCH_OFFSET_DAYS = 25_569;
 const MS_PER_DAY = 24 * 60 * 60 * 1_000;
 
@@ -35,7 +36,10 @@ function isExactUtcDate(year: number, month: number, day: number): boolean {
   );
 }
 
-export function parseDateValue(value: unknown): ParseResult<string> {
+export function parseDateValue(
+  value: unknown,
+  options: { defaultYear?: number } = {},
+): ParseResult<string> {
   if (value instanceof Date && Number.isFinite(value.getTime())) {
     return success(toIsoDate(value));
   }
@@ -47,13 +51,25 @@ export function parseDateValue(value: unknown): ParseResult<string> {
 
   const raw = String(value ?? "").trim();
   const match = DATE_PATTERN.exec(raw);
-  if (!match) {
+  if (match) {
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    if (!isExactUtcDate(year, month, day)) {
+      return failure("日期不存在");
+    }
+
+    return success(toIsoDate(new Date(Date.UTC(year, month - 1, day))));
+  }
+
+  const monthDayMatch = MONTH_DAY_PATTERN.exec(raw);
+  if (!monthDayMatch || !options.defaultYear) {
     return failure("日期格式无效");
   }
 
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
+  const year = options.defaultYear;
+  const month = Number(monthDayMatch[1]);
+  const day = Number(monthDayMatch[2]);
   if (!isExactUtcDate(year, month, day)) {
     return failure("日期不存在");
   }

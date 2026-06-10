@@ -30,6 +30,35 @@ describe("fieldMapping", () => {
     expect(mapping.missingRequiredFields).toEqual(["platform"]);
   });
 
+  it("maps daily agency report headers from IGS CSV exports", () => {
+    const mapping = mapHeaders([
+      "日期",
+      "媒体",
+      "国家",
+      "消耗",
+      "展示次数",
+      "点击次数",
+      "安装人数",
+      "注册人数",
+      "付费人数",
+      "付费价值",
+    ]);
+
+    expect(mapping.mappedFields).toMatchObject({
+      date: "日期",
+      platform: "媒体",
+      country: "国家",
+      spendUsd: "消耗",
+      impressions: "展示次数",
+      clicks: "点击次数",
+      installs: "安装人数",
+      activations: "注册人数",
+      payers: "付费人数",
+      revenueD7Usd: "付费价值",
+    });
+    expect(mapping.missingRequiredFields).toEqual([]);
+  });
+
   it("normalizes supported platform aliases to the existing enum", () => {
     expect(normalizePlatform("facebook")).toBe("Meta Ads");
     expect(normalizePlatform("adwords")).toBe("Google Ads");
