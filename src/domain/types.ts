@@ -62,4 +62,17 @@ export interface Metrics {
   payerRate: number;
   d7Roas: number;
   d30Ltv: number;
+  d0Roas: number;
+  arppu: number;
+  paymentRate: number;
+  installRate: number;
+  cvr: number;
+  installRegistrationRate: number;
+  cpm: number;
+  cpc: number;
+  ipm: number;
+  cpr: number;
+  cpp: number;
+  d1RetentionRate: number;
+  d7RetentionRate: number;
 }

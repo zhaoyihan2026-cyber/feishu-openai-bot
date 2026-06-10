@@ -4,6 +4,28 @@ export function safeDivide(numerator: number, denominator: number): number {
   return denominator === 0 ? 0 : numerator / denominator;
 }
 
+function weightedAverage(
+  records: AcquisitionRecord[],
+  field: "d1RetentionRate" | "d7RetentionRate",
+): number {
+  const totals = records.reduce(
+    (result, record) => {
+      const value = record[field];
+      if (value === undefined || !Number.isFinite(value)) {
+        return result;
+      }
+
+      return {
+        weightedValue: result.weightedValue + value * record.installs,
+        weight: result.weight + record.installs,
+      };
+    },
+    { weightedValue: 0, weight: 0 },
+  );
+
+  return safeDivide(totals.weightedValue, totals.weight);
+}
+
 export function aggregateMetrics(records: AcquisitionRecord[]): Metrics {
   const totals = records.reduce(
     (metrics, record) => {
@@ -37,5 +59,18 @@ export function aggregateMetrics(records: AcquisitionRecord[]): Metrics {
     payerRate: safeDivide(totals.payers, totals.installs),
     d7Roas: safeDivide(totals.revenueD7Usd, totals.spendUsd),
     d30Ltv: safeDivide(totals.revenueD30Usd, totals.payers),
+    d0Roas: safeDivide(totals.revenueD7Usd, totals.spendUsd),
+    arppu: safeDivide(totals.revenueD7Usd, totals.payers),
+    paymentRate: safeDivide(totals.payers, totals.installs),
+    installRate: safeDivide(totals.installs, totals.impressions),
+    cvr: safeDivide(totals.installs, totals.clicks),
+    installRegistrationRate: safeDivide(totals.activations, totals.installs),
+    cpm: safeDivide(totals.spendUsd, totals.impressions) * 1_000,
+    cpc: safeDivide(totals.spendUsd, totals.clicks),
+    ipm: safeDivide(totals.installs, totals.impressions) * 1_000,
+    cpr: safeDivide(totals.spendUsd, totals.activations),
+    cpp: safeDivide(totals.spendUsd, totals.payers),
+    d1RetentionRate: weightedAverage(records, "d1RetentionRate"),
+    d7RetentionRate: weightedAverage(records, "d7RetentionRate"),
   };
 }

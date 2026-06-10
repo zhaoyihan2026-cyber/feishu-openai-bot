@@ -81,6 +81,19 @@ describe("aggregateMetrics", () => {
       payerRate: 0.1,
       d7Roas: 0.5,
       d30Ltv: 25,
+      d0Roas: 0.5,
+      arppu: 10,
+      paymentRate: 0.1,
+      installRate: 0.02,
+      cvr: 0.2,
+      installRegistrationRate: 0.6,
+      cpm: 40,
+      cpc: 0.4,
+      ipm: 20,
+      cpr: 60 / 18,
+      cpp: 20,
+      d1RetentionRate: 0,
+      d7RetentionRate: 0,
     });
   });
 
@@ -102,8 +115,67 @@ describe("aggregateMetrics", () => {
       payerRate: 0,
       d7Roas: 0,
       d30Ltv: 0,
+      d0Roas: 0,
+      arppu: 0,
+      paymentRate: 0,
+      installRate: 0,
+      cvr: 0,
+      installRegistrationRate: 0,
+      cpm: 0,
+      cpc: 0,
+      ipm: 0,
+      cpr: 0,
+      cpp: 0,
+      d1RetentionRate: 0,
+      d7RetentionRate: 0,
     });
     expect(Object.values(metrics).every(Number.isFinite)).toBe(true);
+  });
+
+  it("derives agency report metrics from aggregate totals and weighted retention", () => {
+    const metrics = aggregateMetrics([
+      createRecord({
+        impressions: 1_000,
+        clicks: 100,
+        installs: 10,
+        activations: 4,
+        payers: 1,
+        spendUsd: 100,
+        revenueD7Usd: 40,
+        d1RetentionRate: 0.2,
+        d7RetentionRate: 0.1,
+      }),
+      createRecord({
+        id: "record-2",
+        impressions: 2_000,
+        clicks: 200,
+        installs: 20,
+        activations: 12,
+        payers: 2,
+        spendUsd: 200,
+        revenueD7Usd: 110,
+        d1RetentionRate: 0.4,
+        d7RetentionRate: 0.3,
+      }),
+    ]);
+
+    expect(metrics.d0Roas).toBeCloseTo(150 / 300);
+    expect(metrics.arppu).toBeCloseTo(150 / 3);
+    expect(metrics.paymentRate).toBeCloseTo(3 / 30);
+    expect(metrics.installRate).toBeCloseTo(30 / 3_000);
+    expect(metrics.cvr).toBeCloseTo(30 / 300);
+    expect(metrics.installRegistrationRate).toBeCloseTo(16 / 30);
+    expect(metrics.cpm).toBeCloseTo((300 / 3_000) * 1_000);
+    expect(metrics.cpc).toBeCloseTo(300 / 300);
+    expect(metrics.ipm).toBeCloseTo((30 / 3_000) * 1_000);
+    expect(metrics.cpr).toBeCloseTo(300 / 16);
+    expect(metrics.cpp).toBeCloseTo(300 / 3);
+    expect(metrics.d1RetentionRate).toBeCloseTo(
+      (0.2 * 10 + 0.4 * 20) / 30,
+    );
+    expect(metrics.d7RetentionRate).toBeCloseTo(
+      (0.1 * 10 + 0.3 * 20) / 30,
+    );
   });
 
   it.each([
