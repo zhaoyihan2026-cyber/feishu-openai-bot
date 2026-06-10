@@ -19,7 +19,7 @@ describe("DashboardPage", () => {
     window.history.pushState({}, "", "/");
   });
 
-  it("renders seven KPIs and every management module", async () => {
+  it("renders agency-report KPIs and every management module", async () => {
     render(<App />);
 
     expect(
@@ -36,10 +36,15 @@ describe("DashboardPage", () => {
       "付费用户 Payers",
       "D7 ROAS",
       "D30 LTV",
+      "D0 ROAS",
+      "注册成本 CPR",
+      "付费成本 CPP",
+      "D1 留存",
+      "D7 留存",
     ]) {
       expect(within(kpis).getByText(label)).toBeInTheDocument();
     }
-    expect(within(kpis).getAllByRole("listitem")).toHaveLength(7);
+    expect(within(kpis).getAllByRole("listitem")).toHaveLength(12);
     const viewModel = buildDashboardViewModel(mockRecords, {
       dateFrom: "2026-05-08",
       dateTo: "2026-06-06",

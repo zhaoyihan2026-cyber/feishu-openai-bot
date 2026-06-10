@@ -1,6 +1,7 @@
 import { aggregateMetrics, safeDivide } from "./metrics";
+import type { AcquisitionRecord } from "./types";
 
-const baseRecord = {
+const baseRecord: AcquisitionRecord = {
   id: "record-1",
   date: "2026-06-01",
   updatedAt: "2026-06-01T12:00:00Z",
