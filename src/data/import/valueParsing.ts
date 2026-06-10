@@ -107,3 +107,36 @@ export function parseNumberValue(
 
   return success(parsed);
 }
+
+export function parsePercentValue(
+  value: unknown,
+  options: {
+    required: boolean;
+    defaultValue?: number;
+    allowNegative?: boolean;
+  },
+): ParseResult<number> {
+  const raw =
+    typeof value === "number" ? String(value) : String(value ?? "").trim();
+
+  if (!raw) {
+    if (options.required) {
+      return failure("百分比字段不能为空");
+    }
+
+    return success(options.defaultValue ?? 0);
+  }
+
+  const hasPercentSign = raw.includes("%");
+  const parsed = Number(raw.replace(/[%,$,\s]/g, ""));
+  if (!Number.isFinite(parsed)) {
+    return failure("百分比格式无效");
+  }
+
+  const valueAsRate = hasPercentSign ? parsed / 100 : parsed;
+  if (options.allowNegative === false && valueAsRate < 0) {
+    return failure("百分比不能为负数");
+  }
+
+  return success(valueAsRate);
+}

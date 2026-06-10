@@ -29,6 +29,22 @@ export interface AcquisitionRecord {
   revenueD7Usd: number;
   revenueD30Usd: number;
   budgetUsd: number;
+  d0Roas?: number;
+  arppu?: number;
+  paymentRate?: number;
+  installRate?: number;
+  ctr?: number;
+  cvr?: number;
+  installRegistrationRate?: number;
+  cpm?: number;
+  cpc?: number;
+  ipm?: number;
+  cpi?: number;
+  cpr?: number;
+  cpp?: number;
+  d1RetentionRate?: number;
+  d7RetentionRate?: number;
+  selected?: string;
 }
 
 export interface Metrics {

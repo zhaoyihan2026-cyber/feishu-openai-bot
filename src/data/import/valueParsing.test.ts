@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseDateValue, parseNumberValue } from "./valueParsing";
+import {
+  parseDateValue,
+  parseNumberValue,
+  parsePercentValue,
+} from "./valueParsing";
 
 describe("valueParsing", () => {
   it("parses supported date formats and Excel serial dates", () => {
@@ -38,10 +42,32 @@ describe("valueParsing", () => {
     });
   });
 
+  it("parses percent values as decimal rates", () => {
+    expect(parsePercentValue("16.23%", { required: true })).toEqual({
+      ok: true,
+      value: 0.1623,
+    });
+    expect(parsePercentValue("0.35", { required: true })).toEqual({
+      ok: true,
+      value: 0.35,
+    });
+    expect(parsePercentValue("", { required: false, defaultValue: 0 })).toEqual({
+      ok: true,
+      value: 0,
+    });
+  });
+
   it("rejects invalid and negative required acquisition numbers", () => {
     expect(parseNumberValue("abc", { required: true }).ok).toBe(false);
     expect(
       parseNumberValue("-1", { required: true, allowNegative: false }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects invalid percent values", () => {
+    expect(parsePercentValue("abc", { required: true }).ok).toBe(false);
+    expect(
+      parsePercentValue("-1%", { required: true, allowNegative: false }).ok,
     ).toBe(false);
   });
 });
