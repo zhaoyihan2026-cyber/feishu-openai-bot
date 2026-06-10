@@ -16,7 +16,7 @@ vi.mock("../../components/charts/Chart", () => ({
 
 describe("DashboardPage", () => {
   beforeEach(() => {
-    window.history.pushState({}, "", "/");
+    window.history.pushState({}, "", "/dashboard");
   });
 
   it("renders agency-report KPIs and every management module", async () => {

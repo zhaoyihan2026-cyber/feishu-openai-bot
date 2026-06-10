@@ -6,6 +6,7 @@ import { ImportedDataProvider } from "../data/import/ImportedDataProvider";
 import { MockDataProvider } from "../data/mock/MockDataProvider";
 import { CreativeAnalysisPage } from "../features/creatives/CreativeAnalysisPage";
 import { DataManagementPage } from "../features/data-management/DataManagementPage";
+import { DailyReportBoardPage } from "../features/daily-report/DailyReportBoardPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { PerformanceAnalysisPage } from "../features/performance/PerformanceAnalysisPage";
 import { useAppData } from "../components/layout/AppShell";
@@ -30,7 +31,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppShell dataProvider={defaultDataProvider} />}>
-        <Route index element={<DashboardPage />} />
+        <Route index element={<DailyReportBoardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="performance" element={<PerformanceAnalysisPage />} />
         <Route path="creatives" element={<CreativeAnalysisPage />} />
         <Route path="data" element={<DataManagementRoute />} />

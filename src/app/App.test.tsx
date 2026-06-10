@@ -27,12 +27,18 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "素材分析" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "数据管理" })).toBeInTheDocument();
     expect(
-      await screen.findByRole("heading", { name: "管理总览" }),
+      await screen.findByRole("heading", { name: "全部渠道 - 新用户行为" }),
     ).toBeInTheDocument();
-    expect(await screen.findByText("总花费 Spend")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "预算节奏" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "异常提醒" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "平台表现" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "全部渠道 - 新用户行为 - 分国家" }))
+      .toBeInTheDocument();
+    expect(
+      screen.getByRole("region", {
+        name: "全部渠道 - 新用户行为 - 分 Campaign",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /Mtg - 新用户行为/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("opens the data management route", async () => {
@@ -85,7 +91,7 @@ describe("App", () => {
 
   it("starts at account when dashboard navigation sets a platform filter", async () => {
     const user = userEvent.setup();
-    window.history.pushState({}, "", "/");
+    window.history.pushState({}, "", "/dashboard");
 
     render(<App />);
 
