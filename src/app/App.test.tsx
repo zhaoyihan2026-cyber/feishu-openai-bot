@@ -200,6 +200,21 @@ describe("App", () => {
     ).not.toBeInTheDocument();
 
     await user.clear(search);
+    expect(within(table).getByRole("button", { name: /展示/ }))
+      .toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: /点击/ }))
+      .toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: /注册/ }))
+      .toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: /付费价值/ }))
+      .toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: /D0 ROAS/ }))
+      .toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: /D1 留存/ }))
+      .toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: /D7 留存/ }))
+      .toBeInTheDocument();
+
     const spendSort = within(table).getByRole("button", { name: /花费 Spend/ });
     await user.click(spendSort);
     expect(spendSort.closest("th")).toHaveAttribute("aria-sort", "ascending");
