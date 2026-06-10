@@ -217,36 +217,31 @@ button:hover {
   position: sticky;
   left: 0;
   z-index: 3;
-  width: 176px;
-  min-width: 176px;
-  max-width: 176px;
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
   background: #ffffff;
   text-align: left;
   white-space: normal;
 }
 
-.daily-report-metric-cell {
+.daily-report-date-row-cell {
   position: sticky;
-  left: 176px;
+  left: 220px;
   z-index: 3;
-  width: 82px;
-  min-width: 82px;
-  max-width: 82px;
+  width: 104px;
+  min-width: 104px;
+  max-width: 104px;
   background: #ffffff;
   text-align: center;
 }
 
-.daily-report-total-cell {
-  width: 86px;
-  min-width: 86px;
-}
-
-.daily-report-date-cell {
-  min-width: 108px;
+.daily-report-metric-value-cell {
+  min-width: 92px;
 }
 
 .daily-report-pivot-label,
-.daily-report-pivot-table thead .daily-report-metric-cell,
+.daily-report-pivot-table thead .daily-report-date-row-cell,
 .daily-report-country-table thead th:first-child {
   z-index: 4;
   background: #fbfbfc;

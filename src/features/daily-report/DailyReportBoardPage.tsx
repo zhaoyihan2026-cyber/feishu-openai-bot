@@ -5,9 +5,9 @@ import { ModuleState } from "../../components/feedback/ModuleState";
 import { useAppData, type AppDataContext } from "../../components/layout/AppShell";
 import { useFilters } from "../../state/FilterContext";
 import {
+  dailyReportMetrics,
   buildDailyReportViewModel,
   type DailyReportCountryRow,
-  type DailyReportMetricRow,
   type DailyReportPivotRow,
   type DailyReportViewModel,
 } from "./dailyReportAnalysis";
@@ -137,33 +137,38 @@ function CountryTable({ rows }: { rows: DailyReportCountryRow[] }) {
   );
 }
 
-function PivotMetricRows({
-  dates,
-  row,
-}: {
+function PivotDateRows({ dates, row }: {
   dates: readonly string[];
   row: DailyReportPivotRow;
 }) {
+  const metricsById = new Map(row.metrics.map((metric) => [metric.id, metric]));
+  const rowSpan = dates.length + 1;
+
   return (
     <>
-      {row.metrics.map((metric, index) => (
-        <tr key={`${row.label}:${metric.id}`}>
+      {["阶段汇总", ...dates].map((dateLabel, index) => (
+        <tr key={`${row.label}:${dateLabel}`}>
           {index === 0 ? (
-            <th className="daily-report-group-cell" rowSpan={row.metrics.length}>
+            <th className="daily-report-group-cell" rowSpan={rowSpan}>
               {row.label}
             </th>
           ) : null}
-          <th className="daily-report-metric-cell" scope="row">
-            {metric.label}
+          <th className="daily-report-date-row-cell" scope="row">
+            {dateLabel}
           </th>
-          <td className="daily-report-total-cell">
-            {formatMetric(metric.total, metric.format)}
-          </td>
-          {dates.map((date) => (
-            <td className="daily-report-date-cell" key={date}>
-              {formatMetric(metric.valuesByDate[date] ?? 0, metric.format)}
-            </td>
-          ))}
+          {dailyReportMetrics.map(({ id }) => {
+            const metric = metricsById.get(id);
+            const value =
+              dateLabel === "阶段汇总"
+                ? metric?.total
+                : metric?.valuesByDate[dateLabel];
+
+            return (
+              <td className="daily-report-metric-value-cell" key={id}>
+                {metric ? formatMetric(value ?? 0, metric.format) : "-"}
+              </td>
+            );
+          })}
         </tr>
       ))}
     </>
@@ -187,29 +192,29 @@ function PivotTable({
             <th className="daily-report-pivot-label" scope="col">
               {firstColumn}
             </th>
-            <th className="daily-report-metric-cell" scope="col">
-              指标
+            <th className="daily-report-date-row-cell" scope="col">
+              日期
             </th>
-            <th className="daily-report-total-cell" scope="col">
-              阶段汇总
-            </th>
-            {dates.map((date) => (
-              <th className="daily-report-date-cell" scope="col" key={date}>
-                {date}
+            {dailyReportMetrics.map(({ id, label }) => (
+              <th
+                className="daily-report-metric-value-cell"
+                scope="col"
+                key={id}
+              >
+                {label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <PivotMetricRows dates={dates} key={row.label} row={row} />
+            <PivotDateRows dates={dates} key={row.label} row={row} />
           ))}
         </tbody>
       </table>
     </div>
   );
 }
-
 function DailyReportBoard({ viewModel }: { viewModel: DailyReportViewModel }) {
   const countryTitle = `${viewModel.channelName} - 新用户行为 - 分国家`;
   const campaignTitle = `${viewModel.channelName} - 新用户行为 - 分 Campaign`;

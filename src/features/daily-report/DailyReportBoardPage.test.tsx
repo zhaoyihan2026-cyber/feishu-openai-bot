@@ -120,11 +120,23 @@ describe("DailyReportBoardPage", () => {
     const campaign = screen.getByRole("region", {
       name: "Meta Ads - 新用户行为 - 分 Campaign",
     });
-    expect(within(campaign).getByText("2026-04-02")).toBeInTheDocument();
-    expect(within(campaign).getByText("2026-04-01")).toBeInTheDocument();
+    const campaignHeaders = within(campaign)
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(campaignHeaders.slice(0, 6)).toEqual([
+      "Campaign",
+      "日期",
+      "消耗",
+      "展示次数",
+      "点击次数",
+      "安装人数",
+    ]);
+    expect(within(campaign).getByRole("row", { name: /2026-04-02/ }))
+      .toHaveTextContent("50");
+    expect(within(campaign).getByRole("row", { name: /2026-04-01/ }))
+      .toHaveTextContent("100");
     expect(within(campaign).getByText("阶段汇总")).toBeInTheDocument();
     expect(within(campaign).getByText("Meta Campaign")).toBeInTheDocument();
-    expect(within(campaign).getByText("消耗")).toBeInTheDocument();
 
     const creative = screen.getByRole("region", {
       name: "Meta Ads - 新用户行为 - 分 Campaign 分 Creative",
