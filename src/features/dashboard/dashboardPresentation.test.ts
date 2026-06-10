@@ -26,6 +26,19 @@ const metrics: Metrics = {
   payerRate: 0.0794,
   d7Roas: 0.6,
   d30Ltv: 225,
+  d0Roas: 0.6,
+  arppu: 75.59,
+  paymentRate: 0.0794,
+  installRate: 0.1234,
+  cvr: 1.5425,
+  installRegistrationRate: 0.5997,
+  cpm: 1234.57,
+  cpc: 15.43,
+  ipm: 123.4,
+  cpr: 16.68,
+  cpp: 125.98,
+  d1RetentionRate: 0.34,
+  d7RetentionRate: 0.21,
 };
 
 const comparison = (
@@ -43,6 +56,11 @@ const comparisons: DashboardComparisons = {
   payers: comparison(55, 43, 0.279),
   d7Roas: comparison(0.6, 0.7, -0.143),
   d30Ltv: comparison(225, 210, 0.071),
+  d0Roas: comparison(0.6, 0.7, -0.143),
+  cpr: comparison(16.68, 14, 0.191),
+  cpp: comparison(125.98, 110, 0.145),
+  d1RetentionRate: comparison(0.34, 0.31, 0.097),
+  d7RetentionRate: comparison(0.21, 0.2, 0.05),
 };
 
 describe("dashboard presentation", () => {
@@ -57,6 +75,11 @@ describe("dashboard presentation", () => {
       "98",
       "60.0%",
       "$225.00",
+      "60.0%",
+      "$16.68",
+      "$125.98",
+      "34.0%",
+      "21.0%",
     ]);
     expect(kpis.map(({ status }) => status)).toEqual([
       "neutral",
@@ -65,6 +88,11 @@ describe("dashboard presentation", () => {
       "positive",
       "positive",
       "negative",
+      "positive",
+      "negative",
+      "negative",
+      "negative",
+      "positive",
       "positive",
     ]);
     expect(kpis[0].comparison).toBe("较上期 +40.0%");

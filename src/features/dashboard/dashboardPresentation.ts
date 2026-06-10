@@ -109,6 +109,41 @@ export function buildDashboardKpis(
       comparison: comparisonText(comparisons.d30Ltv),
       status: statusForChange(comparisons.d30Ltv, "higher"),
     },
+    {
+      id: "d0-roas",
+      label: "D0 ROAS",
+      value: percent.format(metrics.d0Roas),
+      comparison: comparisonText(comparisons.d0Roas),
+      status: statusForChange(comparisons.d0Roas, "higher"),
+    },
+    {
+      id: "cpr",
+      label: "注册成本 CPR",
+      value: currency.format(metrics.cpr),
+      comparison: comparisonText(comparisons.cpr),
+      status: statusForChange(comparisons.cpr, "lower"),
+    },
+    {
+      id: "cpp",
+      label: "付费成本 CPP",
+      value: currency.format(metrics.cpp),
+      comparison: comparisonText(comparisons.cpp),
+      status: statusForChange(comparisons.cpp, "lower"),
+    },
+    {
+      id: "d1-retention",
+      label: "D1 留存",
+      value: percent.format(metrics.d1RetentionRate),
+      comparison: comparisonText(comparisons.d1RetentionRate),
+      status: statusForChange(comparisons.d1RetentionRate, "higher"),
+    },
+    {
+      id: "d7-retention",
+      label: "D7 留存",
+      value: percent.format(metrics.d7RetentionRate),
+      comparison: comparisonText(comparisons.d7RetentionRate),
+      status: statusForChange(comparisons.d7RetentionRate, "higher"),
+    },
   ];
 }
 

@@ -61,6 +61,11 @@ export interface DashboardComparisons {
   payers: MetricComparison;
   d7Roas: MetricComparison;
   d30Ltv: MetricComparison;
+  d0Roas: MetricComparison;
+  cpr: MetricComparison;
+  cpp: MetricComparison;
+  d1RetentionRate: MetricComparison;
+  d7RetentionRate: MetricComparison;
 }
 
 export interface DashboardViewModel {
@@ -398,6 +403,17 @@ export function buildDashboardViewModel(
       payers: comparison(currentMetrics.payers, previousMetrics.payers),
       d7Roas: comparison(currentMetrics.d7Roas, previousMetrics.d7Roas),
       d30Ltv: comparison(currentMetrics.d30Ltv, previousMetrics.d30Ltv),
+      d0Roas: comparison(currentMetrics.d0Roas, previousMetrics.d0Roas),
+      cpr: comparison(currentMetrics.cpr, previousMetrics.cpr),
+      cpp: comparison(currentMetrics.cpp, previousMetrics.cpp),
+      d1RetentionRate: comparison(
+        currentMetrics.d1RetentionRate,
+        previousMetrics.d1RetentionRate,
+      ),
+      d7RetentionRate: comparison(
+        currentMetrics.d7RetentionRate,
+        previousMetrics.d7RetentionRate,
+      ),
     },
     dailySeries: buildDailySeries(records, options.dateFrom, options.dateTo),
     platforms: aggregatePlatforms(records),
