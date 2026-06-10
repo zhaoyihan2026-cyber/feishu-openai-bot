@@ -11,7 +11,11 @@ import type {
   ImportQualitySummary,
   RawImportRow,
 } from "./types";
-import { parseDateValue, parseNumberValue } from "./valueParsing";
+import {
+  parseDateValue,
+  parseNumberValue,
+  parsePercentValue,
+} from "./valueParsing";
 
 export interface ValidateImportRowsOptions {
   importedAt: string;
@@ -37,6 +41,27 @@ const NUMBER_FIELDS: Array<{
   { field: "spendUsd", required: true, defaultValue: 0 },
   { field: "revenueD7Usd", required: false, defaultValue: 0 },
   { field: "revenueD30Usd", required: false, defaultValue: 0 },
+];
+
+const REPORT_NUMBER_FIELDS: ImportField[] = [
+  "arppu",
+  "cpm",
+  "cpc",
+  "ipm",
+  "cpi",
+  "cpr",
+  "cpp",
+];
+
+const REPORT_PERCENT_FIELDS: ImportField[] = [
+  "d0Roas",
+  "paymentRate",
+  "installRate",
+  "ctr",
+  "cvr",
+  "installRegistrationRate",
+  "d1RetentionRate",
+  "d7RetentionRate",
 ];
 
 function rawValue(
@@ -183,6 +208,48 @@ export function validateImportRows(
       });
     }
 
+    const reportNumbers: Partial<Record<ImportField, number>> = {};
+    for (const field of REPORT_NUMBER_FIELDS) {
+      const parsed = parseNumberValue(rawValue(row, mappedFields, field), {
+        required: false,
+        defaultValue: undefined,
+        allowNegative: false,
+      });
+      if (parsed.ok) {
+        if (String(rawValue(row, mappedFields, field) ?? "").trim()) {
+          reportNumbers[field] = parsed.value;
+        }
+      } else {
+        addIssue(rowIssues, {
+          rowNumber,
+          field,
+          message: parsed.message,
+          rawValue: rawValue(row, mappedFields, field),
+        });
+      }
+    }
+
+    const reportRates: Partial<Record<ImportField, number>> = {};
+    for (const field of REPORT_PERCENT_FIELDS) {
+      const parsed = parsePercentValue(rawValue(row, mappedFields, field), {
+        required: false,
+        defaultValue: undefined,
+        allowNegative: false,
+      });
+      if (parsed.ok) {
+        if (String(rawValue(row, mappedFields, field) ?? "").trim()) {
+          reportRates[field] = parsed.value;
+        }
+      } else {
+        addIssue(rowIssues, {
+          rowNumber,
+          field,
+          message: parsed.message,
+          rawValue: rawValue(row, mappedFields, field),
+        });
+      }
+    }
+
     if (rowIssues.length > 0) {
       errorRows += 1;
       issues.push(...rowIssues);
@@ -220,6 +287,7 @@ export function validateImportRows(
       "Unspecified Campaign",
     );
     const date = parsedDate.ok ? parsedDate.value : "";
+    const selected = fallbackString(row, mappedFields, "selected", "");
 
     records.push({
       id: createRecordId(date, platform!, campaign, rowNumber),
@@ -259,6 +327,22 @@ export function validateImportRows(
       revenueD7Usd: numbers.revenueD7Usd!,
       revenueD30Usd: numbers.revenueD30Usd!,
       budgetUsd: numbers.budgetUsd!,
+      d0Roas: reportRates.d0Roas,
+      arppu: reportNumbers.arppu,
+      paymentRate: reportRates.paymentRate,
+      installRate: reportRates.installRate,
+      ctr: reportRates.ctr,
+      cvr: reportRates.cvr,
+      installRegistrationRate: reportRates.installRegistrationRate,
+      cpm: reportNumbers.cpm,
+      cpc: reportNumbers.cpc,
+      ipm: reportNumbers.ipm,
+      cpi: reportNumbers.cpi,
+      cpr: reportNumbers.cpr,
+      cpp: reportNumbers.cpp,
+      d1RetentionRate: reportRates.d1RetentionRate,
+      d7RetentionRate: reportRates.d7RetentionRate,
+      selected: selected || undefined,
     });
   });
 

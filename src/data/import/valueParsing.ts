@@ -133,7 +133,9 @@ export function parsePercentValue(
     return failure("百分比格式无效");
   }
 
-  const valueAsRate = hasPercentSign ? parsed / 100 : parsed;
+  const valueAsRate = hasPercentSign
+    ? Number((parsed / 100).toFixed(10))
+    : parsed;
   if (options.allowNegative === false && valueAsRate < 0) {
     return failure("百分比不能为负数");
   }
