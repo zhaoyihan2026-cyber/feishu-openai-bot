@@ -1389,6 +1389,46 @@ button:hover {
   white-space: nowrap;
 }
 
+.creative-diagnostics {
+  display: grid;
+  grid-template-columns:
+    minmax(120px, 0.7fr)
+    minmax(130px, 0.8fr)
+    minmax(170px, 1fr)
+    repeat(2, minmax(220px, 1.3fr));
+  gap: 10px;
+}
+
+.creative-diagnostic-card {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.creative-diagnostic-card span,
+.creative-diagnostic-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.creative-diagnostic-card strong {
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creative-diagnostic-card--wide strong {
+  font-size: 13px;
+}
+
 .creative-controls {
   display: grid;
   grid-template-columns:
@@ -1709,6 +1749,43 @@ button:hover {
   padding: 8px;
 }
 
+.creative-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  background: #e7e7e2;
+}
+
+.creative-detail-grid div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  padding: 10px 12px;
+  background: var(--canvas);
+}
+
+.creative-detail-grid dt,
+.creative-detail-grid dd {
+  min-width: 0;
+  margin: 0;
+}
+
+.creative-detail-grid dt {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.creative-detail-grid dd {
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .data-management-page {
   display: grid;
   gap: 20px;
@@ -1929,6 +2006,14 @@ button:hover {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .creative-diagnostics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .creative-diagnostic-card--wide {
+    grid-column: span 1;
+  }
+
   .creative-reset {
     width: 44px;
     min-height: 44px;
@@ -2021,6 +2106,10 @@ button:hover {
     align-items: flex-start;
   }
 
+  .creative-diagnostics {
+    grid-template-columns: 1fr;
+  }
+
   .creative-controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2081,6 +2170,10 @@ button:hover {
   .creative-trend-chart.chart {
     height: 300px;
     min-height: 300px;
+  }
+
+  .creative-detail-grid {
+    grid-template-columns: 1fr;
   }
 }
 

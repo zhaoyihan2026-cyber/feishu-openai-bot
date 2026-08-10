@@ -268,6 +268,12 @@ describe("App", () => {
       await screen.findByRole("heading", { name: "素材分析" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Video" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "素材诊断摘要" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("图片覆盖率")).toBeInTheDocument();
+    expect(screen.getByText("最佳素材")).toBeInTheDocument();
+    expect(screen.getByText("优先处理")).toBeInTheDocument();
 
     const expectedRows = filterAndSortCreatives(
       groupCreatives(mockRecords),

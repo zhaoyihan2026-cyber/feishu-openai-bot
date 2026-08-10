@@ -10,6 +10,7 @@ import { ModuleState } from "../../components/feedback/ModuleState";
 import { useAppData } from "../../components/layout/AppShell";
 import { useFilters } from "../../state/FilterContext";
 import {
+  buildCreativeDiagnostics,
   buildCreativeDailySeries,
   createDefaultCreativeFilters,
   filterAndSortCreatives,
@@ -32,6 +33,67 @@ function uniqueSorted<T extends string>(values: readonly T[]): T[] {
   );
 }
 
+const missingThumbnailSvg = `data:image/svg+xml;utf8,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240">
+    <rect width="320" height="240" fill="#f4f3ee"/>
+    <path d="M48 166l58-66 47 48 28-31 91 92H48z" fill="#d7ded9"/>
+    <circle cx="232" cy="70" r="24" fill="#c6d4cd"/>
+    <text x="160" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#686b66">Creative</text>
+  </svg>`,
+)}`;
+
+function CreativeDiagnosticsStrip({
+  diagnostics,
+}: {
+  diagnostics: ReturnType<typeof buildCreativeDiagnostics>;
+}) {
+  return (
+    <section className="creative-diagnostics" aria-label="素材诊断摘要">
+      <article className="creative-diagnostic-card">
+        <span>素材总数</span>
+        <strong>{diagnostics.totalCreatives}</strong>
+        <p>当前全局筛选范围</p>
+      </article>
+      <article className="creative-diagnostic-card">
+        <span>图片覆盖率</span>
+        <strong>{creativeFormatters.percent(diagnostics.thumbnailCoverage)}</strong>
+        <p>缺图会用占位图展示</p>
+      </article>
+      <article className="creative-diagnostic-card">
+        <span>质量分布</span>
+        <strong>
+          优 {diagnostics.statusCounts.优秀} / 观{" "}
+          {diagnostics.statusCounts.观察} / 差{" "}
+          {diagnostics.statusCounts.较差}
+        </strong>
+        <p>按 D7 ROAS 与 CPI 自动判断</p>
+      </article>
+      <article className="creative-diagnostic-card creative-diagnostic-card--wide">
+        <span>最佳素材</span>
+        <strong>{diagnostics.bestCreative?.creative ?? "-"}</strong>
+        <p>
+          D7 ROAS{" "}
+          {creativeFormatters.percent(diagnostics.bestCreative?.d7Roas ?? 0)}
+        </p>
+      </article>
+      <article className="creative-diagnostic-card creative-diagnostic-card--wide">
+        <span>优先处理</span>
+        <strong>{diagnostics.priorityCreative?.creative ?? "-"}</strong>
+        <p>
+          Spend{" "}
+          {creativeFormatters.currency(
+            diagnostics.priorityCreative?.spendUsd ?? 0,
+          )}{" "}
+          · D7 ROAS{" "}
+          {creativeFormatters.percent(
+            diagnostics.priorityCreative?.d7Roas ?? 0,
+          )}
+        </p>
+      </article>
+    </section>
+  );
+}
+
 function CreativeRow({
   row,
   selected,
@@ -41,6 +103,8 @@ function CreativeRow({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const thumbnail = row.thumbnail.trim() || missingThumbnailSvg;
+
   return (
     <article
       className={`creative-row${selected ? " is-selected" : ""}`}
@@ -49,9 +113,12 @@ function CreativeRow({
       <img
         alt={`${row.creative} 素材缩略图`}
         className="creative-thumbnail"
-        src={row.thumbnail}
+        src={thumbnail}
         width="160"
         height="120"
+        onError={(event) => {
+          event.currentTarget.src = missingThumbnailSvg;
+        }}
       />
       <div className="creative-row-content">
         <header className="creative-row-heading">
@@ -115,6 +182,10 @@ export function CreativeAnalysisPage() {
   const rows = useMemo(
     () => groupCreatives(filteredRecords),
     [filteredRecords],
+  );
+  const diagnostics = useMemo(
+    () => buildCreativeDiagnostics(rows),
+    [rows],
   );
   const visibleRows = useMemo(
     () => filterAndSortCreatives(rows, localFilters),
@@ -193,6 +264,8 @@ export function CreativeAnalysisPage() {
         />
       ) : (
         <>
+          <CreativeDiagnosticsStrip diagnostics={diagnostics} />
+
           <section className="creative-controls" aria-label="素材本地筛选">
             <label>
               <span>素材平台</span>
@@ -334,6 +407,32 @@ export function CreativeAnalysisPage() {
                     option={chartOptions}
                     ariaLabel={chartAriaLabel}
                   />
+                  <dl className="creative-detail-grid" aria-label="已选素材信息">
+                    <div>
+                      <dt>Platform</dt>
+                      <dd>{selectedRow.platform}</dd>
+                    </div>
+                    <div>
+                      <dt>Campaign</dt>
+                      <dd>{selectedRow.campaign}</dd>
+                    </div>
+                    <div>
+                      <dt>Ad Group</dt>
+                      <dd>{selectedRow.adGroup}</dd>
+                    </div>
+                    <div>
+                      <dt>Type</dt>
+                      <dd>{selectedRow.type}</dd>
+                    </div>
+                    <div>
+                      <dt>Spend</dt>
+                      <dd>{creativeFormatters.currency(selectedRow.spendUsd)}</dd>
+                    </div>
+                    <div>
+                      <dt>D7 ROAS</dt>
+                      <dd>{creativeFormatters.percent(selectedRow.d7Roas)}</dd>
+                    </div>
+                  </dl>
                 </aside>
               ) : null}
             </div>

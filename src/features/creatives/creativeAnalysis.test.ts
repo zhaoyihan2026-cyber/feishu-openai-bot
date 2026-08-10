@@ -1,6 +1,7 @@
 import type { AcquisitionRecord } from "../../domain/types";
 import {
   buildCreativeDailySeries,
+  buildCreativeDiagnostics,
   createDefaultCreativeFilters,
   filterAndSortCreatives,
   getCreativeStatus,
@@ -99,6 +100,57 @@ describe("creative analysis", () => {
       activationRate: 0.5,
       d7Roas: 0.6,
       status: "观察",
+    });
+  });
+
+  it("summarizes creative quality, thumbnail coverage, and action targets", () => {
+    const rows = [
+      creative({
+        creative: "Scale Winner",
+        status: "优秀",
+        spendUsd: 100,
+        revenueD7Usd: 80,
+        d7Roas: 0.8,
+        cpi: 2,
+        thumbnail: "/winner.webp",
+      }),
+      creative({
+        creative: "Needs New Hook",
+        status: "较差",
+        spendUsd: 120,
+        revenueD7Usd: 12,
+        d7Roas: 0.1,
+        cpi: 6,
+        thumbnail: "",
+      }),
+      creative({
+        creative: "Monitor",
+        status: "观察",
+        spendUsd: 20,
+        revenueD7Usd: 8,
+        d7Roas: 0.4,
+        cpi: 3,
+        thumbnail: "/monitor.webp",
+      }),
+    ];
+
+    expect(buildCreativeDiagnostics(rows)).toMatchObject({
+      totalCreatives: 3,
+      thumbnailCoverage: 2 / 3,
+      statusCounts: {
+        优秀: 1,
+        观察: 1,
+        较差: 1,
+      },
+      bestCreative: {
+        creative: "Scale Winner",
+        d7Roas: 0.8,
+      },
+      priorityCreative: {
+        creative: "Needs New Hook",
+        spendUsd: 120,
+        d7Roas: 0.1,
+      },
     });
   });
 

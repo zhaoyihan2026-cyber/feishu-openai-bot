@@ -29,6 +29,14 @@ export interface CreativeSummary {
   d7Roas: number;
 }
 
+export interface CreativeDiagnostics {
+  totalCreatives: number;
+  thumbnailCoverage: number;
+  statusCounts: Record<CreativeStatus, number>;
+  bestCreative: CreativeSummary | null;
+  priorityCreative: CreativeSummary | null;
+}
+
 export interface CreativeFilters {
   platform: Platform | "";
   type: AcquisitionRecord["creativeType"] | "";
@@ -103,6 +111,62 @@ export function groupCreatives(
       d7Roas: metrics.d7Roas,
     };
   });
+}
+
+function compareBestCreative(
+  left: CreativeSummary,
+  right: CreativeSummary,
+): number {
+  return (
+    right.d7Roas - left.d7Roas ||
+    left.cpi - right.cpi ||
+    right.spendUsd - left.spendUsd ||
+    left.creative.localeCompare(right.creative, "en")
+  );
+}
+
+function comparePriorityCreative(
+  left: CreativeSummary,
+  right: CreativeSummary,
+): number {
+  return (
+    right.spendUsd - left.spendUsd ||
+    left.d7Roas - right.d7Roas ||
+    right.cpi - left.cpi ||
+    left.creative.localeCompare(right.creative, "en")
+  );
+}
+
+export function buildCreativeDiagnostics(
+  rows: readonly CreativeSummary[],
+): CreativeDiagnostics {
+  const statusCounts: Record<CreativeStatus, number> = {
+    优秀: 0,
+    观察: 0,
+    较差: 0,
+  };
+
+  let rowsWithThumbnails = 0;
+  for (const row of rows) {
+    statusCounts[row.status] += 1;
+    if (row.thumbnail.trim()) {
+      rowsWithThumbnails += 1;
+    }
+  }
+
+  const rowsByQuality = [...rows].sort(compareBestCreative);
+  const priorityPool = rows.filter(({ status }) => status === "较差");
+
+  return {
+    totalCreatives: rows.length,
+    thumbnailCoverage:
+      rows.length === 0 ? 0 : rowsWithThumbnails / rows.length,
+    statusCounts,
+    bestCreative: rowsByQuality[0] ?? null,
+    priorityCreative:
+      [...(priorityPool.length > 0 ? priorityPool : rows)]
+        .sort(comparePriorityCreative)[0] ?? null,
+  };
 }
 
 function compareCreatives(
